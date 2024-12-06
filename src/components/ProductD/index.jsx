@@ -30,7 +30,7 @@ https://strapi-store-server.onrender.com/api/products/${id}`
       <div className="product-page">
         <div className="container">
           <div className="link-home">
-            <p>House {">"} Products</p>
+            <p>Home {">"} Products</p>
           </div>
           {product.id && (
             <>
