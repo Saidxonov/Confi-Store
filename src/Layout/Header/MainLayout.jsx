@@ -1,4 +1,4 @@
-import "./MainLayout.css";
+import "./Mainlayout.css";
 import Cart from "/public/cart.svg";
 import Dark from "/public/dark-mode.svg";
 import { NavLink } from "react-router-dom";
