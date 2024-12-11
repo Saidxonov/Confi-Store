@@ -7,17 +7,40 @@ function Product() {
   const [res, setRes] = useState([]);
   const [filteredRes, setFilteredRes] = useState([]);
   const [search, setSearch] = useState("");
+  const [companies, setCompanies] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCompany, setSelectedCompany] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const navigate = useNavigate();
 
-  useEffect(function () {
+  useEffect(() => {
     axios
       .get(`https://strapi-store-server.onrender.com/api/products`)
       .then((response) => {
-        console.log(response);
         if (response.status === 200) {
-          setRes(response.data.data);
-          setFilteredRes(response.data.data);
+          const products = response.data.data;
+          setRes(products);
+          setFilteredRes(products);
+
+          const uniqueCompanies = [];
+          const uniqueCategories = [];
+
+          products.forEach((product) => {
+            const company = product.attributes.company;
+            const category = product.attributes.category;
+
+            if (!uniqueCompanies.includes(company)) {
+              uniqueCompanies.push(company);
+            }
+
+            if (!uniqueCategories.includes(category)) {
+              uniqueCategories.push(category);
+            }
+          });
+
+          setCompanies(uniqueCompanies);
+          setCategories(uniqueCategories);
         }
       })
       .catch((err) => {
@@ -28,14 +51,43 @@ function Product() {
   function handleSearch(e) {
     const query = e.target.value.toLowerCase();
     setSearch(query);
-    if (query === "") {
-      setFilteredRes(res);
-    } else {
-      const filtered = res.filter((product) =>
-        product.attributes.title.toLowerCase().includes(query)
+    filterProducts(query, selectedCompany, selectedCategory);
+  }
+
+  function handleCompanyChange(e) {
+    const company = e.target.value;
+    setSelectedCompany(company);
+    filterProducts(search, company, selectedCategory);
+  }
+
+  function handleCategoryChange(e) {
+    const category = e.target.value;
+    setSelectedCategory(category);
+    filterProducts(search, selectedCompany, category);
+  }
+
+  function filterProducts(searchQuery, company, category) {
+    let filtered = res;
+
+    if (searchQuery) {
+      filtered = filtered.filter((product) =>
+        product.attributes.title.toLowerCase().includes(searchQuery)
       );
-      setFilteredRes(filtered);
     }
+
+    if (company) {
+      filtered = filtered.filter(
+        (product) => product.attributes.company === company
+      );
+    }
+
+    if (category) {
+      filtered = filtered.filter(
+        (product) => product.attributes.category === category
+      );
+    }
+
+    setFilteredRes(filtered);
   }
 
   function handleClick(id) {
@@ -45,14 +97,45 @@ function Product() {
   return (
     <>
       <div className="form">
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={search}
-          onChange={handleSearch}
-          className="search-input"
-        />
+        <div className="container">
+          <form>
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={search}
+              onChange={handleSearch}
+              className="search-input"
+            />
+
+            <select
+              value={selectedCompany}
+              onChange={handleCompanyChange}
+              className="filter-select"
+            >
+              <option value="">All Companies</option>
+              {companies.map((company, index) => (
+                <option key={index} value={company}>
+                  {company}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={selectedCategory}
+              onChange={handleCategoryChange}
+              className="filter-select"
+            >
+              <option value="">All Categories</option>
+              {categories.map((category, index) => (
+                <option key={index} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </form>
+        </div>
       </div>
+
       <div className="products">
         <div className="container">
           <div className="products-list">
